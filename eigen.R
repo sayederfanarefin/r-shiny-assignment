@@ -16,7 +16,7 @@ coeff_tst_sel=0.0
 showFace <- function(x){
   y <- t(apply(matrix(as.numeric(x), nrow=64, byrow=T), 2, rev)) 
   
-  png("" width=400, height=400)
+  png("D:\\r-shiny-assignment\\temp\\plot.png", width=600, height=400)
   image(y,col=grey(seq(0, 1, length=256)), xaxt="n", yaxt="n")
   dev.off()
   
