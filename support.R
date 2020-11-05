@@ -77,8 +77,8 @@ mainMethod <- function (df, splitPoint, ratioOfOffset){
   
   png("temp\\plot.png", width=600, height=600)
   
-  plot(seq_along(varPropCum),varPropCum*100, xlab = "Eigenvalues", ylab = "Percentage of cumulative variance %", 
-       main = "Percentage of cumulative variance in total variance")
+  plot(seq_along(varPropCum),varPropCum*100, xlab = "Eigenvalues", ylab = "Cumulative variance %", 
+       main = "Cumulative variance in total variance %")
   dev.off()
   
   sVar <- min(which(varPropCum > ratioOfOffset)) 
@@ -106,7 +106,7 @@ mainMethod <- function (df, splitPoint, ratioOfOffset){
   
   variab <- ((400/100) * (100 - splitPoint))
   
-  results <-`colnames<-`(data.frame(matrix(NA, nrow = variab, ncol = 3)), c("Image labels", "Classified labels", "Correctly classified (1) / Incorrectly classified(0)"))
+  results <-`colnames<-`(data.frame(matrix(NA, nrow = variab, ncol = 3)), c("Original labels", "Classified labels", "If Correct (1) or, If not correct(0)"))
   
   for (i in 1:nrow(coeffefficientTestFace)) { 
     coeffecientSelYYY <- coeffefficientTestFace[i, , drop=FALSE]
