@@ -49,9 +49,7 @@ ui <- fluidPage(
                          choices = c(None = "",
                                      "Double Quote" = '"',
                                      "Single Quote" = "'"),
-                         selected = '"'),
-            
-          
+                         selected = '"')
             
         ),
         
@@ -61,19 +59,24 @@ ui <- fluidPage(
             textOutput("accuracy"),
             tableOutput("contents"),
             
-            plotOutput("plot3"),
-            textOutput("trainingImage"),
+            plotOutput("graph"),
             
-            plotOutput("plot4"),
-            textOutput("avgImage"),
             
-            plotOutput("plot5"),
-            textOutput("igenImage"),
+            textOutput("trainingImageTitle"),
+            plotOutput("trainingImage"),
             
-            plotOutput("plot1"),
-            textOutput("reconstructedImage"),
-            plotOutput("plot2")
             
+            textOutput("avgImageTitle"),
+            plotOutput("avgImage"),
+            
+            
+            textOutput("igenImageTitle"),
+            plotOutput("igenImage"),
+            
+            
+            textOutput("reconstructedImageTitle"),
+            plotOutput("reconstructedImage")
+           
             
         )
         
@@ -129,26 +132,27 @@ server <- function(input, output, session) {
     }, caption = "Results", caption.placement = getOption("xtable.caption.placement", "top"))
     
     
+    # Variance ratio threshold to select principal components
     
     
     
-    
-    output$plot3 <- renderImage({
+    output$graph <- renderImage({
         invalidateLater(1000)
         list(src = "temp\\plot.png", width = 400, height = 400,
              alt = "  Loading...")
     }, deleteFile = FALSE)
     
-    output$trainingImage <- renderText("Training Image: ")
-    output$plot1 <- renderImage({
+    
+    output$trainingImageTitle <- renderText("Training Image: ")
+    output$trainingImage <- renderImage({
         invalidateLater(1000)
         list(src = "temp\\ Train .png", width = 400, height = 400,
              alt = "  Loading...")
         
     }, deleteFile = FALSE)
 
-    output$avgImage <- renderText("Average Face: ")
-    output$plot4 <- renderImage({
+    output$avgImageTitle <- renderText("Average Face: ")
+    output$avgImage <- renderImage({
         invalidateLater(1000)
         list(src = "temp\\ AverageFace .png", width = 400, height = 400,
              alt = "  Loading...")
@@ -157,16 +161,16 @@ server <- function(input, output, session) {
     
     
     
-    output$igenImage <- renderText("Igen Face: ")
-    output$plot5 <- renderImage({
+    output$igenImageTitle <- renderText("Igen Face: ")
+    output$igenImage <- renderImage({
         invalidateLater(1000)
         list(src = "temp\\ sel_vec- 1 .png", width = 400, height = 400,
              alt = "  Loading...")
     }, deleteFile = FALSE)
     
     
-    output$reconstructedImage <- renderText("Reconstructing faces with coefficient and eigenvector: ")
-    output$plot2 <- renderImage({
+    output$reconstructedImageTitle <- renderText("Reconstructing faces with coefficient and eigenvector: ")
+    output$reconstructedImage <- renderImage({
         invalidateLater(1000)
         list(src = "temp\\ LastOne .png", width = 400, height = 400,
              alt = "  Loading...")
