@@ -67,6 +67,9 @@ ui <- fluidPage(
             plotOutput("plot4"),
             textOutput("avgImage"),
             
+            plotOutput("plot5"),
+            textOutput("igenImage"),
+            
             plotOutput("plot1"),
             textOutput("reconstructedImage"),
             plotOutput("plot2")
@@ -150,6 +153,15 @@ server <- function(input, output, session) {
         list(src = "temp\\ AverageFace .png", width = 400, height = 400,
              alt = "  Loading...")
         
+    }, deleteFile = FALSE)
+    
+    
+    
+    output$igenImage <- renderText("Igen Face: ")
+    output$plot5 <- renderImage({
+        invalidateLater(1000)
+        list(src = "temp\\ sel_vec- 1 .png", width = 400, height = 400,
+             alt = "  Loading...")
     }, deleteFile = FALSE)
     
     
