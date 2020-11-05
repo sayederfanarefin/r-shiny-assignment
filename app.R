@@ -49,7 +49,19 @@ ui <- fluidPage(
                          choices = c(None = "",
                                      "Double Quote" = '"',
                                      "Single Quote" = "'"),
-                         selected = '"')
+                         selected = '"'),
+            
+            #Horizontal line ----
+                tags$hr(),
+            
+            sliderInput("split", "Split: Train-Test", 5, 95,
+                        value = 80, step = 1),
+            #Horizontal line ----
+            tags$hr(),
+            
+            sliderInput("ratio", "Variance ratio threshold to select principal components", 0.10, 0.99,
+                        value = 0.95, step = 0.01)
+            
             
         ),
         
@@ -98,7 +110,7 @@ server <- function(input, output, session) {
                                header = input$header,
                                sep = input$sep,
                                quote = input$quote)
-                mainMethod(df)
+                mainMethod(df, input$split, input$ratio)
                 
             },
             error = function(e) {
@@ -115,11 +127,11 @@ server <- function(input, output, session) {
        
         tryCatch(
             {
-                df <- read.csv("temp\\results.csv",
-                               header = input$header,
-                               sep = input$sep,
-                               quote = input$quote)
-               
+                df <- read.csv("temp\\results.csv")
+                # ,
+                # header = input$header,
+                # sep = input$sep,
+                # quote = input$quote
                 
             },
             error = function(e) {
@@ -130,10 +142,6 @@ server <- function(input, output, session) {
     
         
     }, caption = "Results", caption.placement = getOption("xtable.caption.placement", "top"))
-    
-    
-    # Variance ratio threshold to select principal components
-    
     
     
     output$graph <- renderImage({

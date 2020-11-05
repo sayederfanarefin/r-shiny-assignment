@@ -75,7 +75,11 @@ eucled_diff <- function(x){
 #loading data
 
 
-mainMethod <- function (dataFrameInput){
+mainMethod <- function (dataFrameInput, split, ratio){
+  
+  print ("main method called ")
+  print (toString(split))
+  print (toString(ratio))
   
   dataX <-  data.frame(dataFrameInput)
   
@@ -99,7 +103,9 @@ mainMethod <- function (dataFrameInput){
   
   #splitting training and test data
   set.seed(1234)
-  trainSample <- arrange(sample_n(group_by(dataY, label),8), index)
+  sp <- split/10
+  
+  trainSample <- arrange(sample_n(group_by(dataY, label),sp), index)
   testSample <-  setdiff(dataY, trainSample)
   
   train_dataMatrx <-`rownames<-`(data.matrix(filter(dataX, row_number() %in% trainSample[, "index", drop=TRUE])), trainSample[, "label", drop=TRUE])
@@ -142,7 +148,7 @@ mainMethod <- function (dataFrameInput){
        main = "Percentage of cumulative variance in total variance")
   dev.off()
   
-  sel_var <- min(which(var_Prop_Cumulative > 0.95)) 
+  sel_var <- min(which(var_Prop_Cumulative > ratio)) 
   sel_vec <-  eigenVec[, 1:sel_var] #selected eigen vectors
   str(sel_vec)
   
@@ -170,9 +176,10 @@ mainMethod <- function (dataFrameInput){
   showFace((train_dataMatrx[1, ]), "Train")
   showFace((coeff_tr_face[1, ] %*% t(sel_vec) + avgFace), "LastOne")
   
+  bla <- ((400/100) * (100 - split))
   
   #Face recognition calculation for test faces
-  results <-`colnames<-`(data.frame(matrix(NA, nrow = 80, ncol = 3)), c("Image labels", "Classified labels",
+  results <-`colnames<-`(data.frame(matrix(NA, nrow = bla, ncol = 3)), c("Image labels", "Classified labels",
                                                                         "Correctly classified (1) / Incorrectly classified(0)"))
   
   for (i in 1:nrow(coeff_tst_face)) { 
