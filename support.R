@@ -36,7 +36,7 @@ mainMethod <- function (df, splitPoint, ratioOfOffset){
     showFace(dataX[i, ], newName)
   }
   
-  dataY<- select(mutate(data.frame(rep(seq(1:40),each=10)), index = rowNumberr()), 2, label = 1) 
+  dataY<- select(mutate(data.frame(rep(seq(1:40),each=10)), index = row_number()), 2, label = 1) 
   str(dataY)
   
   set.seed(1234)
@@ -45,10 +45,10 @@ mainMethod <- function (df, splitPoint, ratioOfOffset){
   trainSample <- arrange(sample_n(group_by(dataY, label),sp), index)
   testSample <-  setdiff(dataY, trainSample)
   
-  trainMat <-`rownames<-`(data.matrix(filter(dataX, rowNumberr() %in% trainSample[, "index", drop=TRUE])), trainSample[, "label", drop=TRUE])
+  trainMat <-`rownames<-`(data.matrix(filter(dataX, row_number() %in% trainSample[, "index", drop=TRUE])), trainSample[, "label", drop=TRUE])
   str(trainMat, list.len = 5)
   
-  dataMatTest <-`rownames<-`(data.matrix(filter(dataX, rowNumberr() %in% testSample[, "index", drop=TRUE])), testSample[, "label", drop=TRUE])
+  dataMatTest <-`rownames<-`(data.matrix(filter(dataX, row_number() %in% testSample[, "index", drop=TRUE])), testSample[, "label", drop=TRUE])
   str(dataMatTest)
   
   avgFace <- colMeans(trainMat)
