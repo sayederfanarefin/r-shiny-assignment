@@ -60,7 +60,13 @@ ui <- fluidPage(
             
             # Output: Data file ----
             tableOutput("contents"),
-            plotOutput("plot1")
+            
+            plotOutput("plot3"),
+            textOutput("trainingImage"),
+            plotOutput("plot1"),
+            textOutput("reconstructedImage"),
+            plotOutput("plot2")
+            
             
         )
         
@@ -70,7 +76,7 @@ ui <- fluidPage(
 options(shiny.maxRequestSize=30*1024^3)
 
 # Define server logic to read selected file ----
-server <- function(input, output) {
+server <- function(input, output, session) {
     
     output$contents <- renderTable({
         
@@ -89,6 +95,7 @@ server <- function(input, output) {
                                sep = input$sep,
                                quote = input$quote)
                 mainMethod(df)
+                
             },
             error = function(e) {
                 # return a safeError if a parsing error occurs
@@ -103,7 +110,30 @@ server <- function(input, output) {
         #     return(df)
         # }
         
-    })
+    }, caption = "Results", caption.placement = getOption("xtable.caption.placement", "top"))
+    
+    output$plot3 <- renderImage({
+        invalidateLater(1000)
+        list(src = "temp\\plot.png", width = 400, height = 400,
+             alt = "  Loading...")
+    }, deleteFile = FALSE)
+    
+    output$trainingImage <- renderText("Training Image: ")
+    output$plot1 <- renderImage({
+        invalidateLater(1000)
+        list(src = "temp\\ Train .png", width = 400, height = 400,
+             alt = "  Loading...")
+        
+    }, deleteFile = FALSE)
+
+    output$reconstructedImage <- renderText("Reconstructing faces with coefficient and eigenvector: ")
+    output$plot2 <- renderImage({
+        invalidateLater(1000)
+        list(src = "temp\\ LastOne .png", width = 400, height = 400,
+             alt = "  Loading...")
+    }, deleteFile = FALSE)
+    
+    
     
 }
 

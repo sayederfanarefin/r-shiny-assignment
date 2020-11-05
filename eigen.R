@@ -13,16 +13,55 @@ coeff_tst_sel=0.0
 
 ###############################################################################################################################
 #Function for showing face images
-showFace <- function(x){
+showFace <- function(x, fileName){
   y <- t(apply(matrix(as.numeric(x), nrow=64, byrow=T), 2, rev)) 
   
-  png("D:\\r-shiny-assignment\\temp\\plot.png", width=600, height=400)
+  pathTemp <- paste("temp\\", fileName)
+  
+  pathTemp2 <- paste(pathTemp, ".png")
+  
+  print(pathTemp2)
+  
+  png(pathTemp2, width=600, height=600)
   image(y,col=grey(seq(0, 1, length=256)), xaxt="n", yaxt="n")
   dev.off()
   
-    
+  
 }
 
+
+
+showFaceCombination <- function(fileNamePrefix){
+  
+  # example image
+  # img <- readPNG(system.file("img", "Rlogo.png", package="png"))
+  
+  # setup plot
+  par(mar=rep(0,4)) # no margins
+  
+  # layout the plots into a matrix w/ 12 columns, by row
+  layout(matrix(1:120, ncol=12, byrow=TRUE))
+  
+  # do the plotting
+  png("output.png", width=600, height=600)
+  
+  for(i in 1:40) {
+    newName2 <- paste(fileNamePrefix, i) 
+    newName <- paste(newName2, ".png") 
+    pathTemp <- paste("temp\\", newName)
+    print (pathTemp)
+    
+    img <- readPNG(pathTemp)
+    
+    plot(NA,xlim=0:1,ylim=0:1,xaxt="n",yaxt="n",bty="n")
+    rasterImage(img,0,0,1,1)
+  }
+  
+  newName3 <- paste("temp\\", fileNamePrefix, "\\output.pdf") 
+  # write to PDF
+  # dev.print("pdf", newName3)
+  
+}
 
 
 ###############################################################################################################################
@@ -45,9 +84,14 @@ mainMethod <- function (dataFrameInput){
   #Displaying first 40 face images
   par(mfrow=c(4, 10))
   par(mar=c(0.05, 0.05, 0.05, 0.05))
-  # for (i in 1:40) {
-  #   showFace(dataX[i, ])
-  # }
+  for (i in 1:40) {
+    
+    newName <- paste("data-", i) 
+    
+    showFace(dataX[i, ], newName)
+  }
+  
+  showFaceCombination("data-")
   
   #labeling from 1 to 40 for 40 persons in the data
   dataY<- select(mutate(data.frame(rep(seq(1:40),each=10)), index = row_number()), 2, label = 1) 
@@ -67,7 +111,7 @@ mainMethod <- function (dataFrameInput){
   #Average face
   avgFace <- colMeans(train_dataMatrx)
   par(mfrow=c(1,1))
-  showFace(avgFace)
+  showFace(avgFace, "AverageFace")
   
   dataMatrxCenter <- scale(train_dataMatrx, center = TRUE, scale = FALSE)
   
@@ -91,8 +135,12 @@ mainMethod <- function (dataFrameInput){
   
   graphics.off()
   par(mfrow=c(1, 1))
+  
+  png("temp\\plot.png", width=600, height=600)
+  
   plot(seq_along(var_Prop_Cumulative),var_Prop_Cumulative*100, xlab = "Eigenvalues", ylab = "Percentage of cumulative variance %", 
        main = "Percentage of cumulative variance in total variance")
+  dev.off()
   
   sel_var <- min(which(var_Prop_Cumulative > 0.95)) 
   sel_vec <-  eigenVec[, 1:sel_var] #selected eigen vectors
@@ -100,9 +148,15 @@ mainMethod <- function (dataFrameInput){
   
   par(mfrow=c(4,10))
   par(mar=c(0.05, 0.05, 0.05, 0.05))
+  
+  
   for (i in 1:40) {
-    showFace(sel_vec[, i])
+    
+    newName <- paste("sel_vec-",i) 
+    showFace(sel_vec[, i], newName)
   }
+  
+  showFaceCombination("sel_vec-")
   
   #Coefficient for the training and test faces
   coeff_tr_face <- `rownames<-`(dataMatrxCenter %*% sel_vec, rownames(train_dataMatrx)) 
@@ -113,8 +167,8 @@ mainMethod <- function (dataFrameInput){
   #Reconstructing faces with coefficient and eigenvector
   par(mfrow=c(1,2))
   par(mar=c(0.05, 0.05, 0.05, 0.05))
-  showFace((train_dataMatrx[1, ]))
-  showFace((coeff_tr_face[1, ] %*% t(sel_vec) + avgFace))
+  showFace((train_dataMatrx[1, ]), "Train")
+  showFace((coeff_tr_face[1, ] %*% t(sel_vec) + avgFace), "LastOne")
   
   
   #Face recognition calculation for test faces
@@ -136,4 +190,9 @@ mainMethod <- function (dataFrameInput){
   results[, 3] <- ifelse(results[, 2] == results[, 1], 1, 0)
   results[1:40, ]
   (shareCor <- sum(results[, 3])/nrow(results))
+  
+  write.csv(results, file = "temp\\results.csv")
+  print ("Reached end of code")
+  
+  return (results)
 }
