@@ -58,11 +58,15 @@ ui <- fluidPage(
         # Main panel for displaying outputs ----
         mainPanel(
             
-            # Output: Data file ----
+            textOutput("accuracy"),
             tableOutput("contents"),
             
             plotOutput("plot3"),
             textOutput("trainingImage"),
+            
+            plotOutput("plot4"),
+            textOutput("avgImage"),
+            
             plotOutput("plot1"),
             textOutput("reconstructedImage"),
             plotOutput("plot2")
@@ -78,16 +82,10 @@ options(shiny.maxRequestSize=30*1024^3)
 # Define server logic to read selected file ----
 server <- function(input, output, session) {
     
-    output$contents <- renderTable({
-        
-        # input$file1 will be NULL initially. After the user selects
-        # and uploads a file, head of that data file by default,
-        # or all rows if selected, will be shown.
+    output$accuracy <- renderText({
         
         req(input$file1)
         
-        # when reading semicolon separated files,
-        # having a comma separator causes `read.csv` to error
         tryCatch(
             {
                 df <- read.csv(input$file1$datapath,
@@ -102,15 +100,35 @@ server <- function(input, output, session) {
                 stop(safeError(e))
             }
         )
+    
         
-        # if(input$disp == "head") {
-        #     return(head(df))
-        # }
-        # else {
-        #     return(df)
-        # }
+    })
+    
+    output$contents <- renderTable({
+        invalidateLater(1000)
+       
+        tryCatch(
+            {
+                df <- read.csv("temp\\results.csv",
+                               header = input$header,
+                               sep = input$sep,
+                               quote = input$quote)
+               
+                
+            },
+            error = function(e) {
+                # return a safeError if a parsing error occurs
+                stop(safeError(e))
+            }
+        )
+    
         
     }, caption = "Results", caption.placement = getOption("xtable.caption.placement", "top"))
+    
+    
+    
+    
+    
     
     output$plot3 <- renderImage({
         invalidateLater(1000)
@@ -126,6 +144,15 @@ server <- function(input, output, session) {
         
     }, deleteFile = FALSE)
 
+    output$avgImage <- renderText("Average Face: ")
+    output$plot4 <- renderImage({
+        invalidateLater(1000)
+        list(src = "temp\\ AverageFace .png", width = 400, height = 400,
+             alt = "  Loading...")
+        
+    }, deleteFile = FALSE)
+    
+    
     output$reconstructedImage <- renderText("Reconstructing faces with coefficient and eigenvector: ")
     output$plot2 <- renderImage({
         invalidateLater(1000)

@@ -189,10 +189,11 @@ mainMethod <- function (dataFrameInput){
   
   results[, 3] <- ifelse(results[, 2] == results[, 1], 1, 0)
   results[1:40, ]
-  (shareCor <- sum(results[, 3])/nrow(results))
+  shareCor <- sum(results[, 3])/nrow(results)
   
   write.csv(results, file = "temp\\results.csv")
-  print ("Reached end of code")
   
-  return (results)
+  accrcy <- paste("Accuracy: ", toString(shareCor)) 
+  
+  return (accrcy)
 }
