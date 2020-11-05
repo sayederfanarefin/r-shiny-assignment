@@ -81,6 +81,8 @@ mainMethod <- function (dataFrameInput, split, ratio){
   print (toString(split))
   print (toString(ratio))
   
+ 
+  
   dataX <-  data.frame(dataFrameInput)
   
   str(dataX, list.len = 5)
@@ -200,7 +202,7 @@ mainMethod <- function (dataFrameInput, split, ratio){
   
   write.csv(results, file = "temp\\results.csv")
   
-  accrcy <- paste("Accuracy: ", toString(shareCor)) 
+  accrcy <- paste("Accuracy: ", toString(shareCor * 100), "%") 
   
-  return (accrcy)
+  return (accrcy )
 }

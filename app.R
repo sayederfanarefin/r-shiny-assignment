@@ -35,7 +35,7 @@ ui <- fluidPage(
             tags$hr(),
             
             # Input: Checkbox if file has header ----
-            checkboxInput("header", "Header", TRUE),
+            checkboxInput("header", "Header", FALSE),
             
             # Input: Select separator ----
             radioButtons("sep", "Separator",
@@ -95,6 +95,9 @@ ui <- fluidPage(
     )
 )
 
+unlink("temp", recursive = T)
+dir.create("temp")
+
 options(shiny.maxRequestSize=30*1024^3)
 
 # Define server logic to read selected file ----
@@ -110,6 +113,10 @@ server <- function(input, output, session) {
                                header = input$header,
                                sep = input$sep,
                                quote = input$quote)
+                
+                unlink("temp", recursive = T)
+                dir.create("temp")
+                
                 mainMethod(df, input$split, input$ratio)
                 
             },
@@ -136,7 +143,7 @@ server <- function(input, output, session) {
             },
             error = function(e) {
                 # return a safeError if a parsing error occurs
-                stop(safeError(e))
+                # stop(safeError(e))
             }
         )
     
