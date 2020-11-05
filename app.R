@@ -2,46 +2,33 @@ library(shiny)
 
 update.packages(ask = FALSE, checkBuilt = TRUE)
 
-source("eigen.R")
-# Define UI for data upload app 
+source("support.R")
 ui <- fluidPage(
-    
-    # App title 
     titlePanel("R assignment"),
-    
-    # Sidebar layout with input and output definitions 
     sidebarLayout(
         
-        # Sidebar panel for inputs 
         sidebarPanel(
             
-            # Input: Select a file 
             fileInput("file1", "Choose CSV File", multiple = FALSE,  "text/comma-separated-values,text/plain", ".csv")),
             
-            # Horizontal line ----
             tags$hr(),
             
-            # Input: Checkbox if file has header ----
             checkboxInput("header", "Header", FALSE),
             
-            # Input: Select separator ----
             radioButtons("sep", "Separator", choices = c(Comma = ",", Semicolon = ";", Tab = "\t"), selected = ","),
             
-            # Input: Select quotes ----
             radioButtons("quote", "Quote", choices = c(None = "", "Double Quote" = '"', "Single Quote" = "'"), selected = '"'),
             
-            #Horizontal line ----
                 tags$hr(),
             
             sliderInput("split", "Split: Train-Test", 5, 95, value = 80, step = 1),
-            #Horizontal line ----
+            
             tags$hr(),
             
             sliderInput("ratio", "Variance ratio threshold to select principal components", 0.10, 0.99, value = 0.95, step = 0.01)
               
         ),
         
-        # Main panel for displaying outputs ----
         mainPanel( 
             textOutput("accuracy"),
             tableOutput("contents"),
@@ -64,7 +51,6 @@ dir.create("temp")
 
 options(shiny.maxRequestSize=30*1024^3)
 
-# Define server logic to read selected file ----
 server <- function(input, output, session) {
     output$accuracy <- renderText({
         req(input$file1)
@@ -77,7 +63,7 @@ server <- function(input, output, session) {
                 
             },
             error = function(e) {
-                # return a safeError if a parsing error occurs
+                
                 stop(safeError(e))
             }
         )
@@ -129,5 +115,4 @@ server <- function(input, output, session) {
     
 }
 
-# Create Shiny app ----
 shinyApp(ui, server)

@@ -7,14 +7,10 @@ update.packages(ask = FALSE, checkBuilt = TRUE)
 
 coeffecientSel=0.0
 
-
-#This function generates and saves faces
 showFace <- function(x, fileName){
   y <- t(apply(matrix(as.numeric(x), nrow=64, byrow=T), 2, rev)) 
   
   pathTemp <- paste("temp\\", fileName, ".png")
-  
-  # pathTemp2 <- paste(pathTemp, ".png")
   
   png(pathTemp, width=600, height=600)
   image(y,col=grey(seq(0, 1, length=256)), xaxt="n", yaxt="n")
@@ -22,19 +18,16 @@ showFace <- function(x, fileName){
   
 }
 
-# This is for Euclidean distance calculator
 diffCalc <- function(x){
   sqrt(((x-coeffecientSel) %*% t(x-coeffecientSel)))
 }
 
-# This is the main method of the whole program
 mainMethod <- function (df, splitPoint, ratioOfOffset){
 
   dataX <- data.frame(df)
   
   str(dataX, list.len = 5)
   
-  #storing the first 40 faces
   par(mfrow=c(4, 10))
   par(mar=c(0.05, 0.05, 0.05, 0.05))
 
@@ -43,12 +36,9 @@ mainMethod <- function (df, splitPoint, ratioOfOffset){
     showFace(dataX[i, ], newName)
   }
   
-  
-  #labeling from 1 to 40 for 40 persons in the data
   dataY<- select(mutate(data.frame(rep(seq(1:40),each=10)), index = rowNumberr()), 2, label = 1) 
   str(dataY)
   
-  #splitPointting training and test data
   set.seed(1234)
   sp <- splitPoint/10
   
@@ -61,28 +51,24 @@ mainMethod <- function (df, splitPoint, ratioOfOffset){
   dataMatTest <-`rownames<-`(data.matrix(filter(dataX, rowNumberr() %in% testSample[, "index", drop=TRUE])), testSample[, "label", drop=TRUE])
   str(dataMatTest)
   
-  #Average face
   avgFace <- colMeans(trainMat)
   par(mfrow=c(1,1))
   showFace(avgFace, "AverageFace")
   
   dataMatrxCenter <- scale(trainMat, center = TRUE, scale = FALSE)
   
-  #PCA computations
-  covMat <- t(dataMatrxCenter) %*% dataMatrxCenter / nrow(trainMat-1) #Covariance matrix
+  covMat <- t(dataMatrxCenter) %*% dataMatrxCenter / nrow(trainMat-1)
   eigenn <- eigen(covMat)
-  eigenVec <- eigenn$vectors #Eigen vector
-  eigenVal <- eigenn$values  #Eigen Value
+  eigenVec <- eigenn$vectors 
+  eigenVal <- eigenn$values  
   str(eigenVal)
   
-  #SVD computation for Eigen faces result which is better than using PCA
   svd <- svd(dataMatrxCenter)
   eigenVec2 <- svd$v 
   str(eigenVec2)
   eigValueTwo <- svd$d^2/(ncol(dataMatrxCenter)-1) 
   str(eigValueTwo)
   
-  #selection of eigen vectors/faces
   varProp <- eigValueTwo/sum(eigValueTwo) 
   varPropCum <- cumsum(eigValueTwo)/sum(eigValueTwo) 
   
@@ -96,7 +82,7 @@ mainMethod <- function (df, splitPoint, ratioOfOffset){
   dev.off()
   
   sVar <- min(which(varPropCum > ratioOfOffset)) 
-  sVec <-  eigenVec[, 1:sVar] #selected eigen vectors
+  sVec <-  eigenVec[, 1:sVar] 
   str(sVec)
   
   par(mfrow=c(4,10))
@@ -108,23 +94,19 @@ mainMethod <- function (df, splitPoint, ratioOfOffset){
     showFace(sVec[, i], newName)
   }
   
-  
-  #Coefficient for the training and test faces
   coeffefficientTrFace <- `rownames<-`(dataMatrxCenter %*% sVec, rownames(trainMat)) 
   str(coeffefficientTrFace)
   
   coeffefficientTestFace<- t(apply(dataMatTest, 1, function(x) x-avgFace)) %*% sVec 
   
-  #Reconstructing faces with coefficient and eigenvector
   par(mfrow=c(1,2))
   par(mar=c(0.05, 0.05, 0.05, 0.05))
   showFace((trainMat[1, ]), "Train")
   showFace((coeffefficientTrFace[1, ] %*% t(sVec) + avgFace), "LastOne")
   
-  bla <- ((400/100) * (100 - splitPoint))
+  variab <- ((400/100) * (100 - splitPoint))
   
-  #Face recognition calculation for test faces
-  results <-`colnames<-`(data.frame(matrix(NA, nrow = bla, ncol = 3)), c("Image labels", "Classified labels", "Correctly classified (1) / Incorrectly classified(0)"))
+  results <-`colnames<-`(data.frame(matrix(NA, nrow = variab, ncol = 3)), c("Image labels", "Classified labels", "Correctly classified (1) / Incorrectly classified(0)"))
   
   for (i in 1:nrow(coeffefficientTestFace)) { 
     coeffecientSelYYY <- coeffefficientTestFace[i, , drop=FALSE]
