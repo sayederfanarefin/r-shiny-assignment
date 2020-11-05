@@ -4,48 +4,76 @@ update.packages(ask = FALSE, checkBuilt = TRUE)
 
 source("support.R")
 ui <- fluidPage(
-    titlePanel("R assignment"),
+    
+    titlePanel("Eigen Faces Assignment"),
+    
     sidebarLayout(
         
         sidebarPanel(
             
-            fileInput("file1", "Choose CSV File", multiple = FALSE,  "text/comma-separated-values,text/plain", ".csv")),
+            fileInput("file1", "Choose CSV File",
+                      multiple = FALSE,
+                      accept = c("text/csv",
+                                 "text/comma-separated-values,text/plain",
+                                 ".csv")),
             
             tags$hr(),
             
             checkboxInput("header", "Header", FALSE),
             
-            radioButtons("sep", "Separator", choices = c(Comma = ",", Semicolon = ";", Tab = "\t"), selected = ","),
             
-            radioButtons("quote", "Quote", choices = c(None = "", "Double Quote" = '"', "Single Quote" = "'"), selected = '"'),
+            radioButtons("sep", "Separator",
+                         choices = c(Comma = ",",
+                                     Semicolon = ";",
+                                     Tab = "\t"),
+                         selected = ","),
+            
+            radioButtons("quote", "Quote",
+                         choices = c(None = "",
+                                     "Double Quote" = '"',
+                                     "Single Quote" = "'"),
+                         selected = '"'),
             
                 tags$hr(),
             
-            sliderInput("split", "Split: Train-Test", 5, 95, value = 80, step = 1),
-            
+            sliderInput("split", "Split: Train-Test", 5, 95,
+                        value = 80, step = 1),
             tags$hr(),
             
-            sliderInput("ratio", "Variance ratio threshold to select principal components", 0.10, 0.99, value = 0.95, step = 0.01)
-              
+            sliderInput("ratio", "Variance ratio threshold to select principal components", 0.10, 0.99,
+                        value = 0.95, step = 0.01)
+            
+            
         ),
         
-        mainPanel( 
+        mainPanel(
+            
             textOutput("accuracy"),
             tableOutput("contents"),
+            
             plotOutput("graph"),
+            
+            
             textOutput("trainingImageTitle"),
             plotOutput("trainingImage"),
+            
+            
             textOutput("avgImageTitle"),
             plotOutput("avgImage"),
+            
+            
             textOutput("igenImageTitle"),
             plotOutput("igenImage"),
+            
+            
             textOutput("reconstructedImageTitle"),
             plotOutput("reconstructedImage")
+           
+            
         )
         
     )
 )
-
 unlink("temp", recursive = T)
 dir.create("temp")
 
