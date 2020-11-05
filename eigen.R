@@ -1,130 +1,75 @@
 
+library(png)
 require(dplyr)
 library(grid)
-library(png)
-
 
 update.packages(ask = FALSE, checkBuilt = TRUE)
 
-#####glbal variable
-coeff_tst_sel=0.0
+coeffecientSel=0.0
 
 
-
-###############################################################################################################################
-#Function for showing face images
+#This function generates and saves faces
 showFace <- function(x, fileName){
   y <- t(apply(matrix(as.numeric(x), nrow=64, byrow=T), 2, rev)) 
   
-  pathTemp <- paste("temp\\", fileName)
+  pathTemp <- paste("temp\\", fileName, ".png")
   
-  pathTemp2 <- paste(pathTemp, ".png")
+  # pathTemp2 <- paste(pathTemp, ".png")
   
-  print(pathTemp2)
-  
-  png(pathTemp2, width=600, height=600)
+  png(pathTemp, width=600, height=600)
   image(y,col=grey(seq(0, 1, length=256)), xaxt="n", yaxt="n")
   dev.off()
   
-  
 }
 
-
-
-showFaceCombination <- function(fileNamePrefix){
-  
-  # example image
-  # img <- readPNG(system.file("img", "Rlogo.png", package="png"))
-  
-  # setup plot
-  par(mar=rep(0,4)) # no margins
-  
-  # layout the plots into a matrix w/ 12 columns, by row
-  layout(matrix(1:120, ncol=12, byrow=TRUE))
-  
-  # do the plotting
-  png("output.png", width=600, height=600)
-  
-  for(i in 1:40) {
-    newName2 <- paste(fileNamePrefix, i) 
-    newName <- paste(newName2, ".png") 
-    pathTemp <- paste("temp\\", newName)
-    print (pathTemp)
-    
-    img <- readPNG(pathTemp)
-    
-    plot(NA,xlim=0:1,ylim=0:1,xaxt="n",yaxt="n",bty="n")
-    rasterImage(img,0,0,1,1)
-  }
-  
-  newName3 <- paste("temp\\", fileNamePrefix, "\\output.pdf") 
-  # write to PDF
-  # dev.print("pdf", newName3)
-  
+# This is for Euclidean distance calculator
+diffCalc <- function(x){
+  sqrt(((x-coeffecientSel) %*% t(x-coeffecientSel)))
 }
 
+# This is the main method of the whole program
+mainMethod <- function (df, splitPoint, ratioOfOffset){
 
-###############################################################################################################################
-#Function for calculating the Euclidean distance between two vectors
-eucled_diff <- function(x){
-  sqrt(((x-coeff_tst_sel) %*% t(x-coeff_tst_sel)))
-}
-
-
-###############################################################################################################################
-#loading data
-
-
-mainMethod <- function (dataFrameInput, split, ratio){
-  
-  print ("main method called ")
-  print (toString(split))
-  print (toString(ratio))
-  
- 
-  
-  dataX <-  data.frame(dataFrameInput)
+  dataX <- data.frame(df)
   
   str(dataX, list.len = 5)
   
-  #Displaying first 40 face images
+  #storing the first 40 faces
   par(mfrow=c(4, 10))
   par(mar=c(0.05, 0.05, 0.05, 0.05))
+
   for (i in 1:40) {
-    
     newName <- paste("data-", i) 
-    
     showFace(dataX[i, ], newName)
   }
   
-  showFaceCombination("data-")
   
   #labeling from 1 to 40 for 40 persons in the data
-  dataY<- select(mutate(data.frame(rep(seq(1:40),each=10)), index = row_number()), 2, label = 1) 
+  dataY<- select(mutate(data.frame(rep(seq(1:40),each=10)), index = rowNumberr()), 2, label = 1) 
   str(dataY)
   
-  #splitting training and test data
+  #splitPointting training and test data
   set.seed(1234)
-  sp <- split/10
+  sp <- splitPoint/10
   
   trainSample <- arrange(sample_n(group_by(dataY, label),sp), index)
   testSample <-  setdiff(dataY, trainSample)
   
-  train_dataMatrx <-`rownames<-`(data.matrix(filter(dataX, row_number() %in% trainSample[, "index", drop=TRUE])), trainSample[, "label", drop=TRUE])
-  str(train_dataMatrx, list.len = 5)
+  trainMat <-`rownames<-`(data.matrix(filter(dataX, rowNumberr() %in% trainSample[, "index", drop=TRUE])), trainSample[, "label", drop=TRUE])
+  str(trainMat, list.len = 5)
   
-  test_DataMatrx <-`rownames<-`(data.matrix(filter(dataX, row_number() %in% testSample[, "index", drop=TRUE])), testSample[, "label", drop=TRUE])
-  str(test_DataMatrx)
+  dataMatTest <-`rownames<-`(data.matrix(filter(dataX, rowNumberr() %in% testSample[, "index", drop=TRUE])), testSample[, "label", drop=TRUE])
+  str(dataMatTest)
   
   #Average face
-  avgFace <- colMeans(train_dataMatrx)
+  avgFace <- colMeans(trainMat)
   par(mfrow=c(1,1))
   showFace(avgFace, "AverageFace")
   
-  dataMatrxCenter <- scale(train_dataMatrx, center = TRUE, scale = FALSE)
+  dataMatrxCenter <- scale(trainMat, center = TRUE, scale = FALSE)
   
   #PCA computations
-  covMat <- t(dataMatrxCenter) %*% dataMatrxCenter / nrow(train_dataMatrx-1) #Covariance matrix
+  covMat <- t(dataMatrxCenter) %*% dataMatrxCenter / nrow(trainMat-1) #Covariance matrix
   eigenn <- eigen(covMat)
   eigenVec <- eigenn$vectors #Eigen vector
   eigenVal <- eigenn$values  #Eigen Value
@@ -134,66 +79,61 @@ mainMethod <- function (dataFrameInput, split, ratio){
   svd <- svd(dataMatrxCenter)
   eigenVec2 <- svd$v 
   str(eigenVec2)
-  eigenVal2 <- svd$d^2/(ncol(dataMatrxCenter)-1) 
-  str(eigenVal2)
+  eigValueTwo <- svd$d^2/(ncol(dataMatrxCenter)-1) 
+  str(eigValueTwo)
   
   #selection of eigen vectors/faces
-  variance_Proportion <- eigenVal2/sum(eigenVal2) 
-  var_Prop_Cumulative <- cumsum(eigenVal2)/sum(eigenVal2) 
+  varProp <- eigValueTwo/sum(eigValueTwo) 
+  varPropCum <- cumsum(eigValueTwo)/sum(eigValueTwo) 
   
   graphics.off()
   par(mfrow=c(1, 1))
   
   png("temp\\plot.png", width=600, height=600)
   
-  plot(seq_along(var_Prop_Cumulative),var_Prop_Cumulative*100, xlab = "Eigenvalues", ylab = "Percentage of cumulative variance %", 
+  plot(seq_along(varPropCum),varPropCum*100, xlab = "Eigenvalues", ylab = "Percentage of cumulative variance %", 
        main = "Percentage of cumulative variance in total variance")
   dev.off()
   
-  sel_var <- min(which(var_Prop_Cumulative > ratio)) 
-  sel_vec <-  eigenVec[, 1:sel_var] #selected eigen vectors
-  str(sel_vec)
+  sVar <- min(which(varPropCum > ratioOfOffset)) 
+  sVec <-  eigenVec[, 1:sVar] #selected eigen vectors
+  str(sVec)
   
   par(mfrow=c(4,10))
   par(mar=c(0.05, 0.05, 0.05, 0.05))
   
   
   for (i in 1:40) {
-    
-    newName <- paste("sel_vec-",i) 
-    showFace(sel_vec[, i], newName)
+    newName <- paste("sVec-",i) 
+    showFace(sVec[, i], newName)
   }
   
-  showFaceCombination("sel_vec-")
   
   #Coefficient for the training and test faces
-  coeff_tr_face <- `rownames<-`(dataMatrxCenter %*% sel_vec, rownames(train_dataMatrx)) 
-  str(coeff_tr_face)
+  coeffefficientTrFace <- `rownames<-`(dataMatrxCenter %*% sVec, rownames(trainMat)) 
+  str(coeffefficientTrFace)
   
-  coeff_tst_face<- t(apply(test_DataMatrx, 1, function(x) x-avgFace)) %*% sel_vec 
+  coeffefficientTestFace<- t(apply(dataMatTest, 1, function(x) x-avgFace)) %*% sVec 
   
   #Reconstructing faces with coefficient and eigenvector
   par(mfrow=c(1,2))
   par(mar=c(0.05, 0.05, 0.05, 0.05))
-  showFace((train_dataMatrx[1, ]), "Train")
-  showFace((coeff_tr_face[1, ] %*% t(sel_vec) + avgFace), "LastOne")
+  showFace((trainMat[1, ]), "Train")
+  showFace((coeffefficientTrFace[1, ] %*% t(sVec) + avgFace), "LastOne")
   
-  bla <- ((400/100) * (100 - split))
+  bla <- ((400/100) * (100 - splitPoint))
   
   #Face recognition calculation for test faces
-  results <-`colnames<-`(data.frame(matrix(NA, nrow = bla, ncol = 3)), c("Image labels", "Classified labels",
-                                                                        "Correctly classified (1) / Incorrectly classified(0)"))
+  results <-`colnames<-`(data.frame(matrix(NA, nrow = bla, ncol = 3)), c("Image labels", "Classified labels", "Correctly classified (1) / Incorrectly classified(0)"))
   
-  for (i in 1:nrow(coeff_tst_face)) { 
-    coeff_tst_sel_yy <- coeff_tst_face[i, , drop=FALSE]
+  for (i in 1:nrow(coeffefficientTestFace)) { 
+    coeffecientSelYYY <- coeffefficientTestFace[i, , drop=FALSE]
     
-    assign("coeff_tst_sel", coeff_tst_sel_yy, envir = .GlobalEnv)
-    # print (coeff_tst_sel)
-    
-    
-    diff_coeff <- apply(coeff_tr_face, 1, eucled_diff)
-    results[i, 1]  <- rownames(coeff_tst_face)[i]
-    results[i, 2] <- rownames(coeff_tr_face)[which(min(diff_coeff)==diff_coeff)]
+    assign("coeffecientSel", coeffecientSelYYY, envir = .GlobalEnv)
+ 
+    coefficientDifference <- apply(coeffefficientTrFace, 1, diffCalc)
+    results[i, 1]  <- rownames(coeffefficientTestFace)[i]
+    results[i, 2] <- rownames(coeffefficientTrFace)[which(min(coefficientDifference)==coefficientDifference)]
   }
   
   results[, 3] <- ifelse(results[, 2] == results[, 1], 1, 0)
@@ -204,5 +144,5 @@ mainMethod <- function (dataFrameInput, split, ratio){
   
   accrcy <- paste("Accuracy: ", toString(shareCor * 100), "%") 
   
-  return (accrcy )
+  return (accrcy)
 }
